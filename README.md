@@ -1,8 +1,7 @@
 # ReCAPTCHA verifier for nodeJS
 
 Implementation of Google reCAPTCHA verify for nodeJS, written in TypeScript. No dependencies.
-This lib targets reCAPTCHA v3. Not tested, but should also work with v2 as the verify call is
-basically the same.
+This lib targets reCAPTCHA v3.
 
 ## Installation
 
