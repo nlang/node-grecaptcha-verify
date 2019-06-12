@@ -1,0 +1,35 @@
+{
+  "name": "node-grecaptcha-verify",
+  "version": "1.0.0",
+  "description": "Simple reCAPTCHA verifier for node",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "prepare": "npm run build && npm run lint",
+    "build": "tsc",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "devDependencies": {
+    "@types/node": "^10.14.8",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.17.0",
+    "tslint-microsoft-contrib": "^6.1.0",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+  },
+  "author": "Nicolai Lang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nlang/node-grecaptcha-verify"
+  },
+  "homepage": "https://github.com/nlang/node-grecaptcha-verify",
+  "keywords": [
+    "reCAPTCHA",
+    "verify",
+    "typesctipt",
+    "node"
+  ]
+}
