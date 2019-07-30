@@ -22,10 +22,10 @@ Usage:
 
 import {ReCAPTCHA} from "node-grecaptcha-verify";
 
-const grec = new ReCAPTCHA(<YOUR SITE KEY>);
-const isHuman = await grec.verify(<TOKEN>);
+const reCaptcha = new ReCAPTCHA(reCaptchaSecret, parseFloat(process.env.RECAPTCHA_MIN_SCORE));
+const verificationResult = await reCaptcha.verify(token);
 
-if (true === isHuman) {
+if (true === verificationResult.isHuman) {
     // requested by a human
 } else {
     // requested by a bot
@@ -38,10 +38,10 @@ If you want to know what Google answered (e.g. to check for errors or get the sc
 ```typescript
 
 // get the score
-const score = grec.lastResponse.score;
+const score = verificationResult.score;
 
 // get errors
-const errors = greg.lastResponse["error-codes"];
+const errors = verificationResult.errors;
 
 
 ```
@@ -52,11 +52,11 @@ setting it in the constructor. You can also control if the `action` should be re
 ```typescript
 
 // set the minimum score for humans to 0.7 (defaults to 0.5)
-const grec = new ReCAPTCHA(<YOUR SITE KEY>, 0.7);
+const reCaptcha = new ReCAPTCHA(<YOUR SITE KEY>, 0.7);
 
-// tell the lib to check the action if given to the verify call (defaults to false)
-const grec = new ReCAPTCHA(<YOUR SITE KEY>, 0.7, true);
-const isHuman = await grec.verify(<TOKEN>, <ACTION>);
+// tell the lib to check if the action matches (the action you sent to reCAPTCHA in the frontend to obtain the token)
+const reCaptcha = new ReCAPTCHA(<YOUR SITE KEY>, 0.7);
+const isHuman = await reCaptcha.verify(<TOKEN>, <ACTION>);
 
 ```
 

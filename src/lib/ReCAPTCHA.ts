@@ -1,7 +1,8 @@
 import * as https from "https";
 import * as querystring from "querystring";
+import {IVerificationResponse} from "./IVerificationResponse";
 
-export interface IGReCAPTCHAVerifyResponse {
+interface IGReCAPTCHAVerifyResponse {
     success: boolean;
     challenge_ts?: string;
     hostname?: string;
@@ -12,24 +13,50 @@ export interface IGReCAPTCHAVerifyResponse {
 
 export class ReCAPTCHA {
 
-    public lastResponse: IGReCAPTCHAVerifyResponse = { success: false };
+    private static DEFAULT_API_URL = "https://www.google.com/recaptcha/api/siteverify";
 
-    public constructor(private secretKey: string, private minimumScore: number = 0.5, private validationAction: boolean = false) {
+    private static createResponse(isHuman: boolean, score: number, action: string, errors: string[]): IVerificationResponse {
+        return { isHuman, score, action, errors };
     }
 
-    public async verify(token: string, action?: string): Promise<boolean> {
+    public constructor(private secretKey: string, private minimumScore: number = 0.5) {
+    }
 
-        this.lastResponse = { success: false };
-        const response = await new Promise<string>((resolve, reject) => {
+    public async verify(token: string, action?: string): Promise<IVerificationResponse> {
+
+        try {
+            const response = await this.callVerifyApi(token);
+            if (true !== response.success) {
+                return ReCAPTCHA.createResponse(false, 0, null, response["error-codes"]);
+            }
+
+            if (action && action !== response.action) {
+                return ReCAPTCHA.createResponse(false, response.score, response.action, ["ACTION_DOES_NOT_MATCH"]);
+            }
+
+            if (this.minimumScore) {
+                if (response.score < this.minimumScore) {
+                    return ReCAPTCHA.createResponse(false, response.score, response.action, ["SCORE_TOO_LOW"]);
+                }
+            }
+
+            return ReCAPTCHA.createResponse(true, response.score, response.action, null);
+
+        } catch (err) {
+            return ReCAPTCHA.createResponse(false, 0, null, ["API_ERROR", err.message]);
+        }
+    }
+
+    private async callVerifyApi(token: string): Promise<IGReCAPTCHAVerifyResponse> {
+        return new Promise((resolve, reject) => {
 
             const chunks = [];
             const data = querystring.stringify({
                 secret: this.secretKey,
                 response: token,
             });
-            const request = https.request({
-                hostname: "www.google.com",
-                path: "/recaptcha/api/siteverify",
+            const url = process.env.GOOGLE_RECAPTCHA_V3_VERIFY_API_URL || ReCAPTCHA.DEFAULT_API_URL;
+            const request = https.request(url, {
                 method: "POST",
                 headers: {
                     "Content-type": "application/x-www-form-urlencoded",
@@ -41,9 +68,8 @@ export class ReCAPTCHA {
                     chunks.push(chunk);
                 });
                 res.on("end", () => {
-                    resolve(chunks.join(""));
+                    resolve(JSON.parse(chunks.join("")));
                 });
-
             });
 
             request.on("error", (err) => {
@@ -53,24 +79,5 @@ export class ReCAPTCHA {
             request.write(data);
             request.end();
         });
-
-        this.lastResponse = JSON.parse(response) as IGReCAPTCHAVerifyResponse;
-        if (true !== this.lastResponse.success) {
-            return false;
-        }
-
-        if (this.validationAction && action) {
-            if (action !== this.lastResponse.action) {
-                return false;
-            }
-        }
-
-        if (this.minimumScore) {
-            if (this.lastResponse.score < this.minimumScore) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

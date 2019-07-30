@@ -1,6 +1,6 @@
 {
   "name": "node-grecaptcha-verify",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Simple reCAPTCHA verifier for node",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
